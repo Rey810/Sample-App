@@ -7,7 +7,7 @@ class User < ApplicationRecord
                         format: { with: VALID_EMAIL_REGEX },
                         uniqueness: { case_sensitive: false }
 
-    has_secure_password #adds functionality: a password_digest attribute, a pair of virtual attributes (password & password_confirmation), an authenticate method taht returns user when the password is correct. has_secure_password uses the bcrypt hash function (include in GEMFILE)
+    has_secure_password #adds functionality: a password_digest attribute, a pair of virtual attributes (password & password_confirmation), an authenticate method that returns user when the password is correct. has_secure_password uses the bcrypt hash function (include in GEMFILE)
     validates :password, length: { minimum: 6 }, presence: true
 end
- 
+                
