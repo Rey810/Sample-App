@@ -1,6 +1,4 @@
 Rails.application.routes.draw do
-  get '/signup', to: 'users#new'
-
   root 'static_pages#home'
   #by using get we arrange for the route to respond to a GET request
   get '/help', to: 'static_pages#help'
@@ -8,7 +6,9 @@ Rails.application.routes.draw do
   get '/contact', to: 'static_pages#contact'
   get '/signup', to: 'users#new'
   post '/signup', to: 'users#create'
-
+  get '/login', to: 'sessions#new'
+  post 'login', to: 'sessions#create'
+  delete '/logout', to: 'sessions#destroy'
   resources :users
 
 end

@@ -9,5 +9,13 @@ class User < ApplicationRecord
 
     has_secure_password #adds functionality: a password_digest attribute, a pair of virtual attributes (password & password_confirmation), an authenticate method that returns user when the password is correct. has_secure_password uses the bcrypt hash function (include in GEMFILE)
     validates :password, length: { minimum: 6 }, presence: true
+
+    # Returns the hash digest of the given string
+    #THis is done so that a user fixture for a valid user can be created in users.yml
+    def User.digest(string)
+        cost = ActiveModel::SecurePassword.min_cost ? BCrypt::Engine::MIN_COST :
+                                                      BCrypt::Engine.cost
+        BCrypt::Password.create(string, cost: cost)
+    end
 end
                 

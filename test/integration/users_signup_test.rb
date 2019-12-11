@@ -21,7 +21,7 @@ class UsersSignupTest < ActionDispatch::IntegrationTest
       assert_select 'div.field_with_errors' #returns true when it has found these
     end
 
-    #For this test to work, it’s necessary for the Users routesthe Users show action and the show.html.erb viewto work correctly
+    #For this test to work, it’s necessary for the Users routes the Users show action and the show.html.erb view to work correctly
     test "valid signup information" do
       get signup_path
       assert_difference 'User.count', 1 do  #checks for a difference of 1 before and after the block
@@ -32,6 +32,6 @@ class UsersSignupTest < ActionDispatch::IntegrationTest
       end
       follow_redirect!
       assert_template 'users/show'    #This is a sensitive test for almost everyhting related to a user's profile due to what needs to happen to end up here. 
-      assert_not flash.empty?
+      assert is_logged_in?
     end
 end

@@ -13,6 +13,7 @@ class UsersController < ApplicationController
     @user = User.new(user_params)
   
     if @user.save
+      log_in @user
       flash[:success] = "Welcome to The Dark Side"  #flash message can now be used in the appropriate view
       redirect_to @user #rails infers from redirect_to that I want user_url(@user)
     else
