@@ -37,7 +37,6 @@ module SessionsHelper
     # Returns the current logged-in user (if any)
     def current_user
         if (user_id = session[:user_id])
-            #below is the same as @current_user = @current_user || User.find_by(id: session[:user_id]) where the first true result (anything other than nil or false) is assigned to @current_user
             @current_user ||= User.find_by(id: user_id)
         elsif (user_id = cookies.signed[:user_id])
             user = User.find_by(id: user_id)

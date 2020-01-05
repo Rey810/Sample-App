@@ -10,6 +10,7 @@ class User < ApplicationRecord
                         uniqueness: { case_sensitive: false }
 
     has_secure_password #adds functionality: a password_digest attribute, a pair of virtual attributes (password & password_confirmation), an authenticate method that returns user when the password is correct. has_secure_password uses the bcrypt hash function (include in GEMFILE)
+    has_many :microposts, dependent: :destroy
     validates :password, length: { minimum: 6 }, presence: true, allow_nil: true
 
     # Returns the hash digest of the given string
@@ -72,6 +73,13 @@ class User < ApplicationRecord
     def password_reset_expired?
         reset_sent_at < 2.hours.ago 
     end
+
+    # Defines a proto-feed
+    # use of "?" ensures id is properly escaped before inclusion in SQL query preventing serious security hole called SQL injection
+    def feed
+        Micropost.where("user_id = ?", id)
+    end
+
 
     private
 
