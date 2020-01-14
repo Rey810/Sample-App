@@ -76,12 +76,44 @@ class UserTest < ActiveSupport::TestCase
   end
 
   
-  test "associated microposts hould be setroyed" do
+  test "associated microposts should be destroyed" do
     @user.save
     @user.microposts.create!(content: "Lorem ipsum")
     assert_difference 'Micropost.count', -1 do
       @user.destroy
     end
   end
-  
+
+  test "should follow and unfollow a user" do
+    michael = users(:michael) 
+    archer = users(:archer)
+    assert_not michael.following?(archer)
+    michael.follow(archer)
+    assert michael.following?(archer)
+    assert archer.followers.include?(michael)
+    michael.unfollow(archer)
+    assert_not michael.following?(archer)
+  end
+
+  test "feed should have the right posts" do
+    michael = users(:michael)
+    archer  = users(:archer)
+    lana    = users(:lana)
+    # Posts from followed user.
+    # Michael follows Lana. michael's feed must include all of Lana's posts
+    lana.microposts.each do |post_following|
+      assert michael.feed.include?(post_following)
+    end
+    # Posts from self
+    # Ensures Michael has all of his own posts in his feed
+    michael.microposts.each do |post_self|
+      assert michael.feed.include?(post_self)
+    end
+    # Posts from unfollowed user
+    # Michael does not follow Archer Michael's feed must not include Archer's
+    archer.microposts.each do |post_unfollowed|
+      assert_not michael.feed.include?(post_unfollowed)
+    end
+  end
+
 end

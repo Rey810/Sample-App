@@ -10,7 +10,21 @@ class User < ApplicationRecord
                         uniqueness: { case_sensitive: false }
 
     has_secure_password #adds functionality: a password_digest attribute, a pair of virtual attributes (password & password_confirmation), an authenticate method that returns user when the password is correct. has_secure_password uses the bcrypt hash function (include in GEMFILE)
+    
     has_many :microposts, dependent: :destroy
+    has_many :active_relationships, class_name: "Relationship", 
+                                    foreign_key: "follower_id", 
+                                    # destroying a user should destroy that user's relationships
+                                    dependent: :destroy
+    has_many :passive_relationships, class_name: "Relationship", 
+                                        foreign_key: "followed_id",
+                                        dependent: :destroy
+        #with code like 
+        #    has_many :followeds, through: :active_relationships                  
+        #Rails would see “followeds” and use the singular “followed", assembling a collection using #the followed_id relationships table. But user.followeds is rather awkward, so I will use #user.following instead. Rails allows default overriding, in this case using the source #parameter, which explicitly tells Rails that the source of the 'following' array is the set of 'followed' ids.
+    has_many :following, through: :active_relationships, source: :followed 
+    has_many :followers, through: :passive_relationships, source: :follower #source is optional here
+
     validates :password, length: { minimum: 6 }, presence: true, allow_nil: true
 
     # Returns the hash digest of the given string
@@ -77,8 +91,30 @@ class User < ApplicationRecord
     # Defines a proto-feed
     # use of "?" ensures id is properly escaped before inclusion in SQL query preventing serious security hole called SQL injection
     def feed
-        Micropost.where("user_id = ?", id)
+        # A subselect is used here.
+        # It arranges for all the set logic to be pushed into the db which is more efficient
+        # This is the better alternative to the more cumbersome:
+        #  Micropost.where("user_id IN (?) OR user_id = ?", following_ids, id) which pulls all the followed users' ids into memory and creates an array
+        # The more efficient subselect checks for the inclusion (what 'user_id IN following_ids') is doing but does it at the db level 
+        following_ids = "SELECT followed_id FROM relationships
+                        WHERE follower_id = :user_id"
+        Micropost.where("user_id IN (#{following_ids}) OR user_id = :user_id", following_ids: following_ids, user_id: id)
     end
+
+    # the 'following' association is treated like an array (due to   has_many :following, through: :active_relationships, source: :followed) making this possible
+    # the new relationship gets inserted into the relationships table
+    def follow(other_user)
+        following << other_user
+    end
+
+    def unfollow(other_user)
+        following.delete(other_user)
+    end
+
+    def following?(other_user)
+        following.include?(other_user)
+    end
+
 
 
     private
